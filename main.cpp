@@ -9,8 +9,10 @@ using namespace std;
 #include"line.h"
 #include"piece.h"
 #include"square.h"
-#include"iblock.h"
-#include"squiggle.h"
+#include"tblock.h"
+#include"Lblock.h"
+#include"sblock.h"
+#include"zblock.h"
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 800;
 const int FPS = 60;
@@ -84,35 +86,9 @@ int main() {
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_text(font, al_map_rgb(200, 200, 200), 200, 200, NULL, "Tetris!");
 	al_flip_display();
-	al_rest(3);
+	al_rest(1);
 	while (!doexit) {
-		//render section//////////////////////////////////////////////////////
-		if (redraw && al_is_event_queue_empty(event_queue)) {
-			redraw = false;
-			al_clear_to_color(al_map_rgb(0, 0, 0));
-
-			//draw pieces
-			for (iter = pieces.begin(); iter != pieces.end(); iter++) {
-				(*iter)->draw(grid);
-			}
-
-			for (int x = 0; x < 10; x++) {
-				for (int y = 0; y < 16; y++) {
-					if (grid[x][y] == 0) //draw grid lines
-						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 255, 255), 2);
-					if (grid[x][y] == 1) {//draw active line pieces
-						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
-						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
-					}
-					if (grid[x][y] == 10) {//draw inactive line pieces
-						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
-						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
-					}
-				}
-			}
-		}
-
-		al_flip_display();
+	
 
 
 		//timer section///////////////////////////////////////////////////////////
@@ -152,14 +128,33 @@ int main() {
 
 			//create new piece
 			if (ActivePiece == false && ticker > 50) {
-				pieceChoice = rand() % 1 + 1; //randomly pick the next piece type
+				pieceChoice = rand() % 5 + 1; //randomly pick the next piece type
 
 				if (pieceChoice == 1) {
 					line* newline = new line((rand() % 10) * 50, 0);
 					pieces.push_back(newline);
 					cout << "pushed line" << endl;
 				}
-
+				else if (pieceChoice == 2) {
+					square* newsquare = new square((rand() % 9) * 50, 0);
+					pieces.push_back(newsquare);
+					cout << "pushed square" << endl;
+				}
+				else if (pieceChoice == 3) {
+					tblock* newtblock = new tblock((rand() % 8 + 1) * 50, 0);
+					pieces.push_back(newtblock);
+					cout << "pushed tblock" << endl;
+				}
+				else if (pieceChoice == 4) {
+					sblock* newsblock = new sblock((rand() % 8 + 1) * 50, 0);
+					pieces.push_back(newsblock);
+					cout << "pushed sblock" << endl;
+				}
+				else if (pieceChoice == 5) {
+					zblock* newzblock = new zblock((rand() % 8 + 1) * 50, 0);
+					pieces.push_back(newzblock);
+					cout << "pushed zblock" << endl;
+				}
 				ActivePiece = true;
 			}
 
@@ -192,7 +187,7 @@ int main() {
 			//wipe map
 			for (int x = 0; x < 10; x++) {
 				for (int y = 0; y < 16; y++) {
-					if (grid[x][y] < 10)
+					if (grid[x][y] == 1)
 						grid[x][y] = 0;
 				}
 			}
@@ -248,31 +243,60 @@ int main() {
 				break;
 			}
 		}
-	}
+		//render section//////////////////////////////////////////////////////
+		if (redraw && al_is_event_queue_empty(event_queue)) {
+			redraw = false;
+			al_clear_to_color(al_map_rgb(0, 0, 0));
+
+			//draw pieces
+			for (iter = pieces.begin(); iter != pieces.end(); iter++) {
+				(*iter)->draw(grid);
+			}
+
+			for (int x = 0; x < 10; x++) {
+				for (int y = 0; y < 16; y++) {
+					if (grid[x][y] == 0) //draw grid lines
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 255, 255), 2);
+					if (grid[x][y] == 1) {//draw active line pieces
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if (grid[x][y] == 10) {//draw inactive line pieces
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+				}
+			}
+			al_flip_display();
+		}//end of render
+
+	}//end of game loop
+	al_clear_to_color(al_map_rgb(0, 0, 0));
+	al_draw_text(font, al_map_rgb(200, 200, 200), 160, 200, NULL, "GAME OVER!");
+	al_flip_display();
+	al_rest(1);
+	al_destroy_display(display);
+
 }
+
+
+
 bool cullGrid() {
-
-	int RowCount = 0;
-
+	int rowcount = 0;
 	for (int k = 0; k < 16; k++) {
-		RowCount = 0;
+		rowcount = 0;
 		for (int i = 0; i < 10; i++) {
 			if (grid[i][k] == 10) {
-				RowCount++;
+				rowcount++;
 			}
 		}
-		//if 10 out of 10 squares are filled, move the whole matrix down a row
-		if (RowCount == 10) {
+		if (rowcount == 10) {
 			for (int i = 0; i < 10; i++)
-				for (int j = k; j > 0; j--) { //start from the bottom up so we don't erase data
-					grid[i][j] = grid[i][j - 1];//replaces a row with whatever is above it
+				for (int j = k; j > 0; j--) { 
+					grid[i][j] = grid[i][j - 1];
 				}
-
 			return true;
-
-
 		}
 	}
 	return false;
-
 }
