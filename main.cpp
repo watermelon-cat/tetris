@@ -11,6 +11,7 @@ using namespace std;
 #include"square.h"
 #include"tblock.h"
 #include"Lblock.h"
+#include"Jblock.h"
 #include"sblock.h"
 #include"zblock.h"
 const int SCREEN_WIDTH = 500;
@@ -128,7 +129,7 @@ int main() {
 
 			//create new piece
 			if (ActivePiece == false && ticker > 50) {
-				pieceChoice = rand() % 5 + 1; //randomly pick the next piece type
+				pieceChoice = rand() % 7 + 1; //randomly pick the next piece type
 
 				if (pieceChoice == 1) {
 					line* newline = new line((rand() % 10) * 50, 0);
@@ -143,17 +144,27 @@ int main() {
 				else if (pieceChoice == 3) {
 					tblock* newtblock = new tblock((rand() % 8 + 1) * 50, 0);
 					pieces.push_back(newtblock);
-					cout << "pushed tblock" << endl;
+					cout << "pushed T" << endl;
 				}
 				else if (pieceChoice == 4) {
 					sblock* newsblock = new sblock((rand() % 8 + 1) * 50, 0);
 					pieces.push_back(newsblock);
-					cout << "pushed sblock" << endl;
+					cout << "pushed S" << endl;
 				}
 				else if (pieceChoice == 5) {
 					zblock* newzblock = new zblock((rand() % 8 + 1) * 50, 0);
 					pieces.push_back(newzblock);
-					cout << "pushed zblock" << endl;
+					cout << "pushed Z" << endl;
+				}
+				else if (pieceChoice == 6) {
+					Lblock* newLblock = new Lblock((rand() % 8 + 1) * 50, 50);
+					pieces.push_back(newLblock);
+					cout << "pushed L" << endl;
+				}
+				else if (pieceChoice == 7) {
+					Jblock* newJblock = new Jblock((rand() % 8 + 1) * 50, 50);
+					pieces.push_back(newJblock);
+					cout << "pushed J" << endl;
 				}
 				ActivePiece = true;
 			}
