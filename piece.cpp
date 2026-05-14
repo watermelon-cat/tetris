@@ -16,7 +16,7 @@ piece::piece(int xpos, int ypos) {
 }
 
 void piece::move() {
-	y += 3;
+	y += 2;
 }
 int piece::turn(char dir) {
 	return 0;
