@@ -15,7 +15,7 @@ sblock::sblock(int xpos, int ypos) {
 	spin = 1;
 }
 int sblock::turn(char dir) {
-	if (spin == -1) {
+	if (spin == -1 && (x < (500))) {
 		spin *= -1;
 		return 1;
 	}
@@ -26,58 +26,58 @@ int sblock::turn(char dir) {
 }
 void sblock::draw(int map[10][16]) {
 	if (spin == 1) {
-		map[x / 50][y / 50] = 1;
-		map[x / 50][(y + 50) / 50] = 1;
-		map[(x+50) / 50][y / 50] = 1;
-		map[(x-50) / 50][(y + 50) / 50] = 1;
+		map[x / 50][y / 50] = 4;
+		map[x / 50][(y + 50) / 50] = 4;
+		map[(x+50) / 50][y / 50] = 4;
+		map[(x-50) / 50][(y + 50) / 50] = 4;
 	}
 	else if (spin == -1) {
-		map[x / 50][y / 50] = 1;
-		map[(x + 50) / 50][y / 50] = 1;
-		map[x / 50][(y-50) / 50] = 1;
-		map[(x + 50) / 50][(y+50) / 50] = 1;
+		map[x / 50][y / 50] = 4;
+		map[(x + 50) / 50][y / 50] = 4;
+		map[x / 50][(y-50) / 50] = 4;
+		map[(x + 50) / 50][(y+50) / 50] = 4;
 	}
 }
 
 void sblock::land(int map[10][16]) {
 	landed = true;
 	if (spin == 1) {
-		map[x / 50][y / 50] = 10;
-		map[x / 50][(y + 50) / 50] = 10;
-		map[(x + 50) / 50][y / 50] = 10;
-		map[(x - 50) / 50][(y + 50) / 50] = 10;
+		map[x / 50][y / 50] = 40;
+		map[x / 50][(y + 50) / 50] = 40;
+		map[(x + 50) / 50][y / 50] = 40;
+		map[(x - 50) / 50][(y + 50) / 50] = 40;
 	}
 	else if (spin == -1) {
-		map[x / 50][y / 50] = 10;
-		map[(x + 50) / 50][y / 50] = 10;
-		map[x / 50][(y - 50) / 50] = 10;
-		map[(x + 50) / 50][(y + 50) / 50] = 10;
+		map[x / 50][y / 50] = 40;
+		map[(x + 50) / 50][y / 50] = 40;
+		map[x / 50][(y - 50) / 50] = 40;
+		map[(x + 50) / 50][(y + 50) / 50] = 40;
 	}
 }
 
 void sblock::MoveSideways(char dir, int grid[10][16]) {
 	if (spin == 1) {
 		if ((dir == 'r') && (x < 500 - 100) &&
-			(grid[(x + 100) / 50][y / 50] != 10) &&
-			(grid[(x + 50) / 50][(y + 50) / 50] != 10))
+			(grid[(x + 100) / 50][y / 50] < 10) &&
+			(grid[(x + 50) / 50][(y + 50) / 50] < 10))
 			x += 50;
 		else if ((dir == 'l') && (x > 50) &&
-			(grid[(x - 100) / 50][(y + 50) / 50] != 10) &&
-			(grid[(x - 50) / 50][y / 50] != 10))
+			(grid[(x - 100) / 50][(y + 50) / 50] < 10) &&
+			(grid[(x - 50) / 50][y / 50] < 10))
 			x -= 50;
 		else if ((dir == 'd') && (y < 800 - 100))
 			y += 50;
 	}
 	else if (spin == -1) {
 		if ((dir == 'r') && (spin == -1) && (x < 500 - 50) &&
-			(grid[(x + 100) / 50][y / 50] != 10) &&
-			(grid[(x + 50) / 50][(y - 50) / 50] != 10) &&
-			(grid[(x + 50) / 50][(y + 50) / 50] != 10))
+			(grid[(x + 100) / 50][y / 50] < 10) &&
+			(grid[(x + 50) / 50][(y - 50) / 50] < 10) &&
+			(grid[(x + 50) / 50][(y + 50) / 50] < 10))
 			x += 50;
 		else if ((dir == 'l') && (spin == -1) && (x > 0) &&
-			(grid[(x - 50) / 50][(y - 50) / 50] != 10) &&
-			(grid[(x - 50) / 50][y / 50] != 10) &&
-			(grid[x / 50][(y + 50) / 50] != 10))
+			(grid[(x - 50) / 50][(y - 50) / 50] < 10) &&
+			(grid[(x - 50) / 50][y / 50] < 10) &&
+			(grid[x / 50][(y + 50) / 50] < 10))
 			x -= 50;
 		else if ((dir == 'd') && (y < 800 - 150))
 			y += 50;
@@ -85,9 +85,9 @@ void sblock::MoveSideways(char dir, int grid[10][16]) {
 }
 bool sblock::checkCollision(int grid[10][16]) {
 	if (spin == 1) {
-		if ((grid[x / 50][(y + 100) / 50] == 10) ||
-			(grid[(x + 50) / 50][(y + 50) / 50] == 10) ||
-			(grid[(x - 50) / 50][(y + 100) / 50] == 10))
+		if ((grid[x / 50][(y + 100) / 50] >= 10) ||
+			(grid[(x + 50) / 50][(y + 50) / 50] >= 10) ||
+			(grid[(x - 50) / 50][(y + 100) / 50] >= 10))
 			return true;
 		if (y + 100 > 800)
 			return true;
@@ -95,8 +95,8 @@ bool sblock::checkCollision(int grid[10][16]) {
 			return false;
 	}
 	else if (spin == -1) {
-		if ((grid[x / 50][(y + 50) / 50] == 10) ||
-			(grid[(x + 50) / 50][(y + 100) / 50] == 10))
+		if ((grid[x / 50][(y + 50) / 50] >= 10) ||
+			(grid[(x + 50) / 50][(y + 100) / 50] >= 10))
 			return true;
 		if (y + 100 > 800)
 			return true;
