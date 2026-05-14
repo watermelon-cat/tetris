@@ -5,6 +5,8 @@ using namespace std;
 #include<allegro5/allegro_image.h>
 #include<allegro5/allegro_font.h>
 #include<allegro5/allegro_ttf.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include<vector>
 #include"line.h"
 #include"piece.h"
@@ -51,6 +53,12 @@ int main() {
 	al_init_primitives_addon();
 	al_init_font_addon();
 	al_init_ttf_addon();
+	// 1. Install audio
+	al_install_audio();
+	// 2. Initialize codecs
+	al_init_acodec_addon();
+	// 3. Reserve 1 voice
+	al_reserve_samples(2);
 
 	srand(time(NULL));
 
@@ -58,6 +66,8 @@ int main() {
 	ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	ALLEGRO_FONT* font = al_load_font("myfont.ttf", 40, 0);
+	ALLEGRO_AUDIO_STREAM* stream = al_load_audio_stream("Minecraft.mp3", 4, 2048);
+	ALLEGRO_SAMPLE* sample = al_load_sample("gamebeep.mp3");
 	bool doexit = false;
 	int ticker = 0;
 	int moveTimer = 0;
@@ -65,6 +75,7 @@ int main() {
 	bool redraw = true;
 	bool ActivePiece = false;
 	int pieceChoice = 0;
+	int score = 0;
 
 	vector<piece*> pieces;
 	vector<piece*>::iterator iter;
@@ -84,13 +95,20 @@ int main() {
 
 	al_start_timer(timer);
 
+
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_text(font, al_map_rgb(200, 200, 200), 200, 200, NULL, "Tetris!");
 	al_flip_display();
 	al_rest(1);
 	while (!doexit) {
 	
-
+		//if music is loaded
+		if (stream) {
+			al_attach_audio_stream_to_mixer(stream, al_get_default_mixer()); //connect the stream to mixer that plays audio //mixer controls all audio
+			al_set_audio_stream_gain(stream, 1.0); //volume 100%
+			al_set_audio_stream_speed(stream, 1.5); //speed (1.0 is normal, 0.5 is half, 2.0 is 2x speed)
+			al_set_audio_stream_playmode(stream, ALLEGRO_PLAYMODE_LOOP); // play in a loop
+		}
 
 		//timer section///////////////////////////////////////////////////////////
 		ALLEGRO_EVENT ev;
@@ -101,8 +119,12 @@ int main() {
 
 			//cull the grid
 			if (ticker > 50)
-				if (cullGrid() == true)
+				if (cullGrid() == true) {
+					score += 100;
+					al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 					ticker = 0;
+				}
+					
 			if (moveTimer > 5) {
 				if (key[KEY_LEFT]) {
 					for (iter = pieces.begin(); iter != pieces.end(); iter++) {
@@ -134,12 +156,12 @@ int main() {
 				if (pieceChoice == 1) {
 					line* newline = new line((rand() % 10) * 50, 0);
 					pieces.push_back(newline);
-					cout << "pushed line" << endl;
+					cout << "pushed |" << endl;
 				}
 				else if (pieceChoice == 2) {
 					square* newsquare = new square((rand() % 9) * 50, 0);
 					pieces.push_back(newsquare);
-					cout << "pushed square" << endl;
+					cout << "pushed O" << endl;
 				}
 				else if (pieceChoice == 3) {
 					tblock* newtblock = new tblock((rand() % 8 + 1) * 50, 0);
@@ -198,7 +220,7 @@ int main() {
 			//wipe map
 			for (int x = 0; x < 10; x++) {
 				for (int y = 0; y < 16; y++) {
-					if (grid[x][y] == 1)
+					if (grid[x][y] < 10)
 						grid[x][y] = 0;
 				}
 			}
@@ -255,9 +277,12 @@ int main() {
 			}
 		}
 		//render section//////////////////////////////////////////////////////
+		
 		if (redraw && al_is_event_queue_empty(event_queue)) {
 			redraw = false;
-			al_clear_to_color(al_map_rgb(0, 0, 0));
+			al_clear_to_color(al_map_rgb(255, 255, 255));
+
+			al_draw_textf(font, al_map_rgb(110, 110, 110), 20, 10, NULL, "Score: %d", score);
 
 			//draw pieces
 			for (iter = pieces.begin(); iter != pieces.end(); iter++) {
@@ -267,13 +292,34 @@ int main() {
 			for (int x = 0; x < 10; x++) {
 				for (int y = 0; y < 16; y++) {
 					if (grid[x][y] == 0) //draw grid lines
-						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 255, 255), 2);
-					if (grid[x][y] == 1) {//draw active line pieces
-						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(0, 0, 0), 2);
+
+					if ((grid[x][y] == 1) || (grid[x][y] == 10)) {//draw line pieces
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(82, 208, 217)); //cyan
 						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
 					}
-					if (grid[x][y] == 10) {//draw inactive line pieces
-						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55));
+					if ((grid[x][y] == 2) || (grid[x][y] == 20)) {//draw square
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(255, 50, 55)); //red
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if ((grid[x][y] == 3) || (grid[x][y] == 30)) {//draw T
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(115, 72, 207)); //purple
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if ((grid[x][y] == 4) || (grid[x][y] == 40)) {//draw S
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(70, 163, 75)); //green
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if ((grid[x][y] == 5) || (grid[x][y] == 50)) {//draw Z
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(243, 255, 23)); //yellow
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if ((grid[x][y] == 6) || (grid[x][y] == 60)) {//draw L
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(63, 68, 217)); //blue
+						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
+					}
+					if ((grid[x][y] == 7) || (grid[x][y] == 70)) {//draw J
+						al_draw_filled_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(250, 152, 60)); //orange
 						al_draw_rectangle(x * 50, y * 50, x * 50 + 50, y * 50 + 50, al_map_rgb(25, 50, 55), 4);
 					}
 				}
@@ -282,11 +328,13 @@ int main() {
 		}//end of render
 
 	}//end of game loop
-	al_clear_to_color(al_map_rgb(0, 0, 0));
-	al_draw_text(font, al_map_rgb(200, 200, 200), 160, 200, NULL, "GAME OVER!");
+	al_clear_to_color(al_map_rgb(255, 51, 51));
+	al_draw_text(font, al_map_rgb(255, 255, 255), 150, 200, NULL, "GAME OVER!");
+	al_draw_textf(font, al_map_rgb(255, 255, 255), 150, 300, NULL, "Score: %d", score);
 	al_flip_display();
-	al_rest(1);
+	al_rest(3);
 	al_destroy_display(display);
+	al_destroy_audio_stream(stream);
 
 }
 
@@ -297,7 +345,7 @@ bool cullGrid() {
 	for (int k = 0; k < 16; k++) {
 		rowcount = 0;
 		for (int i = 0; i < 10; i++) {
-			if (grid[i][k] == 10) {
+			if (grid[i][k] >= 10) {
 				rowcount++;
 			}
 		}
