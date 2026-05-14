@@ -60,21 +60,21 @@ void line::land(int map[10][16]) {
 void line::MoveSideways(char dir, int grid[10][16]) {
 
 	if (dir == 'r' && spin == 1 && x < 500 - 50 &&
-		(grid[(x + 50) / 50][y / 50] != 10) &&
-		(grid[(x + 50) / 50][(y + 100) / 50] != 10) &&
-		(grid[(x + 50) / 50][(y + 200) / 50] != 10))
+		(grid[(x + 50) / 50][y / 50] < 10) &&
+		(grid[(x + 50) / 50][(y + 100) / 50] < 10) &&
+		(grid[(x + 50) / 50][(y + 200) / 50] < 10))
 		x += 50;
 	else if (dir == 'l' && x > 0 &&
-		(grid[(x - 50) / 50][y / 50] != 10) &&
-		(grid[(x - 50) / 50][(y + 100) / 50] != 10) &&
-		(grid[(x - 50) / 50][(y + 200) / 50] != 10))
+		(grid[(x - 50) / 50][y / 50] < 10) &&
+		(grid[(x - 50) / 50][(y + 100) / 50] < 10) &&
+		(grid[(x - 50) / 50][(y + 200) / 50] < 10))
 		x -= 50;
 
 	else if (dir == 'd' && y < 800 - 250)
 		y += 50;
 
 	else if ((dir == 'r') && (spin == -1) &&
-		(x + 200 < 500) && (grid[(x + 200) / 50][y / 50] != 10))
+		(x + 200 < 500) && (grid[(x + 200) / 50][y / 50] <= 10))
 		x += 50;
 
 }
@@ -82,7 +82,7 @@ void line::MoveSideways(char dir, int grid[10][16]) {
 bool line::checkCollision(int grid[10][16]) {
 
 	if (spin == 1) { //line piece is vertical
-		if (grid[x / 50][(y + 200) / 50] == 10)
+		if (grid[x / 50][(y + 200) / 50] >= 10)
 			return true;
 		if (y + 200 > 800)
 			return true;
@@ -94,15 +94,15 @@ bool line::checkCollision(int grid[10][16]) {
 	else if (spin == -1) { //line piece is horizontal
 
 		if (//bottom left corner
-			(grid[x / 50][(y + 50) / 50] == 10) ||
+			(grid[x / 50][(y + 50) / 50] >= 10) ||
 			//second from left corner
-			(grid[(x + 50) / 50][(y + 50) / 50] == 10) ||
+			(grid[(x + 50) / 50][(y + 50) / 50] >= 10) ||
 			//third from left corner
-			(grid[(x + 100) / 50][(y + 50) / 50] == 10) ||
+			(grid[(x + 100) / 50][(y + 50) / 50] >= 10) ||
 			//fourth from left corner
-			(grid[(x + 150) / 50][(y + 50) / 50] == 10) ||
+			(grid[(x + 150) / 50][(y + 50) / 50] >= 10) ||
 			//bottom right corner
-			(grid[(x + 200 - 10) / 50][(y + 50) / 50] == 10))
+			(grid[(x + 200 - 10) / 50][(y + 50) / 50] >= 10))
 			return true;
 		if (y + 50 > 800)
 			return true;
